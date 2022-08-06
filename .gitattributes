@@ -13,3 +13,4 @@
 *.csv filter=lfs diff=lfs merge=lfs -text
 /hithand_grabnet.egg-info/PKG-INFO filter=lfs diff=lfs merge=lfs -text
 *.txt filter=lfs diff=lfs merge=lfs -text
+*.pyc filter=lfs diff=lfs merge=lfs -text
