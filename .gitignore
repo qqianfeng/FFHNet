@@ -1,0 +1,5 @@
+build/*
+.vscode
+*.pyc
+checkpoints/
+figures/
