@@ -5,13 +5,27 @@ import open3d as o3d
 import os
 import sys
 import torch
+import transforms3d as tf
 
 if sys.version[0] == '3':
     import bps_torch.bps as b_torch
-elif sys.version[0] == '2':
-    import tf.transformations as tft
+
+# elif sys.version[0] == '2':
+#     raise SystemError("Please use python3 to run this script")
+# import tf.transformations as tft
 
 from FFHNet.utils.definitions import HAND_CFG
+
+
+def quat_xyzw2wxyz(quat):
+    """   tf transform defines quaternion as xyzw
+    transforms3d defines quaternion as wxyz
+    so we have to convert quaternion into right form for transforms3d package.
+    """
+
+    quat = np.insert(quat, 0, quat[3])
+    quat = np.delete(quat, -1)
+    return quat
 
 
 def class_labels_from_logits(logits, threshold):
@@ -30,7 +44,7 @@ def cross_product(u, v):
     j = u[:, 2] * v[:, 0] - u[:, 0] * v[:, 2]
     k = u[:, 0] * v[:, 1] - u[:, 1] * v[:, 0]
 
-    out = torch.cat((i.view(batch, 1), j.view(batch, 1), k.view(batch, 1)), 1)  #batch*3
+    out = torch.cat((i.view(batch, 1), j.view(batch, 1), k.view(batch, 1)), 1)  # batch*3
 
     return out
 
@@ -158,7 +172,13 @@ def grasp_numpy_from_data_dict(data):
 def hom_matrix_from_pos_euler_list(pos_euler_list):
     pos = pos_euler_list[:3]
     r, p, y = pos_euler_list[3:]
-    T = tft.euler_matrix(r, p, y)
+    # T = tft.euler_matrix(r, p, y)
+    # assert np.array_equal(T_backup, T)
+    # print('equal assert passed')
+
+    rot = tf.euler.euler2mat(r, p, y)
+    T = np.eye(4, 4)
+    T[:3, :3] = rot
     T[:3, 3] = pos
     return T
 
@@ -168,13 +188,14 @@ def hard_negative_from_positive(palm_pos_hom):
 
     Args:
         palm_pos_hom (4x4 array): The positive grasp as hom transform.
-        
+
     Returns:
         palm_hneg_hom (4x4 array):
     """
-    dist_vec = np.array([0.03, 0.03, 0.03, 0.6, 0.6, 0.6])  #disturb by 0.03 cm and by 0.6 rad
+    dist_vec = np.array([0.03, 0.03, 0.03, 0.6, 0.6, 0.6])  # disturb by 0.03 cm and by 0.6 rad
 
-    ori = np.array(tft.euler_from_matrix(palm_pos_hom))
+    # ori = np.array(tft.euler_from_matrix(palm_pos_hom))
+    ori = np.array(tf.euler.mat2euler(palm_pos_hom[:3, :3]))
     pos_ori = np.concatenate([palm_pos_hom[:3, 3], ori])
 
     rand_sign = np.random.random(6)
@@ -182,8 +203,11 @@ def hard_negative_from_positive(palm_pos_hom):
     rand_sign[rand_sign >= 0.5] = 1
 
     pos_ori_d = pos_ori + rand_sign * dist_vec
+    # palm_hneg_hom = tft.euler_matrix(pos_ori_d[3], pos_ori_d[4], pos_ori_d[5])
+    rot = tf.euler.euler2mat(pos_ori_d[3], pos_ori_d[4], pos_ori_d[5])
+    palm_hneg_hom = np.eye(4, 4)
+    palm_hneg_hom[:3, :3] = rot
 
-    palm_hneg_hom = tft.euler_matrix(pos_ori_d[3], pos_ori_d[4], pos_ori_d[5])
     palm_hneg_hom[:3, 3] = pos_ori_d[:3]
 
     return palm_hneg_hom
@@ -192,7 +216,13 @@ def hard_negative_from_positive(palm_pos_hom):
 def hom_matrix_from_pos_quat_list(rot_quat_list):
     p = rot_quat_list[:3]
     q = rot_quat_list[3:]
-    T = tft.quaternion_matrix(q)
+    # T = tft.quaternion_matrix(q)
+    # assert np.allclose(T_backup, T[:3, :3])
+    # print('pass assert')
+    q = quat_xyzw2wxyz(q)
+    rot = tf.quaternions.quat2mat(q)
+    T = np.eye(4, 4)
+    T[:3, :3] = rot
     T[:3, 3] = p
     return T
 
@@ -312,18 +342,18 @@ def reduce_joint_conf(jc_full):
 
 
 def rot_matrix_from_ortho6d(ortho6d, dtype=torch.float32):
-    x_raw = ortho6d[:, 0:3]  #batch*3
-    y_raw = ortho6d[:, 3:6]  #batch*3
+    x_raw = ortho6d[:, 0:3]  # batch*3
+    y_raw = ortho6d[:, 3:6]  # batch*3
 
-    x = normalize_vector(x_raw)  #batch*3
-    z = cross_product(x, y_raw)  #batch*3
-    z = normalize_vector(z)  #batch*3
-    y = cross_product(z, x)  #batch*3
+    x = normalize_vector(x_raw)  # batch*3
+    z = cross_product(x, y_raw)  # batch*3
+    z = normalize_vector(z)  # batch*3
+    y = cross_product(z, x)  # batch*3
 
     x = x.view(-1, 3, 1)
     y = y.view(-1, 3, 1)
     z = z.view(-1, 3, 1)
-    matrix = torch.cat((x, y, z), 2)  #batch*3*3
+    matrix = torch.cat((x, y, z), 2)  # batch*3*3
     matrix.to(dtype)
     return matrix
 
