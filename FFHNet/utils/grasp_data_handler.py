@@ -20,7 +20,7 @@ class GraspDataHandlerVae:
         self.file_path = file_path
 
     def get_grasps_for_object(self, obj_name, outcome='positive'):
-        """ Returns either all grasps for an outcome in [positive, negative, collision, all]. 
+        """ Returns either all grasps for an outcome in [positive, negative, collision, all].
         All means all outcomes are combined and returned.
         """
         def grasps_for_outcome(file_path, outcome):
@@ -70,7 +70,7 @@ class GraspDataHandlerVae:
     def get_single_grasp_of_outcome(self, obj_name, outcome, random=True, idx=None):
         with h5py.File(self.file_path, 'r') as hdf:
             grasp_gp = hdf[obj_name][outcome]
-            grasp_ids = grasp_gp.keys()
+            grasp_ids = list(grasp_gp.keys())
             if random:
                 idx = np.random.randint(0, len(grasp_ids))
             else:

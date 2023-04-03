@@ -1,35 +1,25 @@
 from __future__ import division
+
+import collections
 import colorsys
 import copy
-import collections
-import cv2
-import numpy as np
-from FFHNet.utils.grasp_data_handler import GraspDataHandlerVae
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-from matplotlib import cm
-from mpl_toolkits.mplot3d import Axes3D
-from urdfpy import URDF
-import open3d as o3d
 import os
+
+import matplotlib
+import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
+import numpy as np
+import open3d as o3d
 import pandas as pd
 import pyrender
-from sklearn.metrics import confusion_matrix
-from sklearn.utils.multiclass import unique_labels
-import shutil
 import trimesh
-
-#from .experiments import *
-
 from FFHNet.config.eval_config import EvalConfig
-from FFHNet.config.train_config import TrainConfig
-#from FFHNet.data.ffhgenerator_data_set import FFHGeneratorDataSet
-#from FFHNet.data.ffhevaluator_data_set import FFHEvaluatorDataSet
 from FFHNet.models.ffhnet import FFHNet
-from FFHNet.utils import utils, writer
+from FFHNet.utils import utils
+from FFHNet.utils.grasp_data_handler import GraspDataHandlerVae
+from sklearn.metrics import confusion_matrix
+from urdfpy import URDF
 
-import utils
 path = os.path.dirname(os.path.abspath(__file__))
 BASE_PATH = os.path.split(os.path.split(path)[0])[0]
 
@@ -241,7 +231,7 @@ def show_grasps_o3d_viewer(self, palm_poses, object_pcd_path):
 
 
 def show_dataloader_grasp(bps_path, obj, centr_T_mesh, palm_pose_mesh, palm_pose_centr):
-    """ 
+    """
     """
     # Load the actual object mesh and turn it into a point cloud
     obj_split = obj.split('_')

@@ -38,7 +38,7 @@ class BaseConfig(object):
                                  help='gpu ids: e.g. [0]  [0,1,2] , [0,2]. use [-1] for CPU')
         self.parser.add_argument('--grasp_data_file_name',
                                  type=str,
-                                 default='ffhnet-grasp.h5',
+                                 default='grasp_data_all.h5',
                                  help='The name of the grasp data file')
         self.parser.add_argument('--latentD',
                                  type=int,

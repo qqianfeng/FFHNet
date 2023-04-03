@@ -1,12 +1,11 @@
-import numpy as np
 import time
+
 import torch
+from FFHNet.utils import utils
 from torch import nn
-from torch.nn import functional as F
 from torch.optim import lr_scheduler
 
-from FFHNet.utils import utils
-import losses
+from FFHNet.models import losses
 
 
 def define_losses(loss_type_recon):
@@ -225,7 +224,7 @@ class FFHGenerator(nn.Module):
         return results
 
     def set_input(self, data):
-        """ Bring input tensors to correct dtype and device. Set whether gradient is required depending on 
+        """ Bring input tensors to correct dtype and device. Set whether gradient is required depending on
         we are in train or eval mode.
         """
         rot_matrix = data["rot_matrix"].to(dtype=self.dtype, device=self.device)
@@ -283,7 +282,7 @@ class FFHEvaluator(nn.Module):
         """Run one forward iteration to evaluate the success probability of given grasps
 
         Args:
-            data (dict): keys should be rot_matrix, transl, joint_conf, bps_object, 
+            data (dict): keys should be rot_matrix, transl, joint_conf, bps_object,
 
         Returns:
             p_success (tensor, batch_size*1): Probability that a grasp will be successful.

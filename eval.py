@@ -1,15 +1,15 @@
 from __future__ import division
-import matplotlib.pyplot as plt
-import numpy as np
+
 import os
-import sklearn.metrics as sk_metrics
-import torch
+
+import numpy as np
 from torch.utils.data import DataLoader
+import argparse
 
 from FFHNet.config.eval_config import EvalConfig
 from FFHNet.config.train_config import TrainConfig
-from FFHNet.data.ffhgenerator_data_set import FFHGeneratorDataSet
 from FFHNet.data.ffhevaluator_data_set import FFHEvaluatorDataSet
+from FFHNet.data.ffhgenerator_data_set import FFHGeneratorDataSet
 from FFHNet.models.ffhnet import FFHNet
 from FFHNet.utils import utils, visualization, writer
 
@@ -293,7 +293,7 @@ def eval_ffhnet_sampling_and_filtering_real(load_epoch_eva,
         print(f_name)
         print("In train mode?: %d" % ffhnet.FFHEvaluator.training)
         print("In train mode?: %d" % ffhnet.FFHGenerator.training)
-        if raw_input('Skip object? Press y: ') == 'y':
+        if input('Skip object? Press y: ') == 'y':
             continue
         # Paths to object and bps
         obj_bps_path = os.path.join(path_real_objs_bps, f_name)
@@ -447,13 +447,18 @@ def eval_eva_acc_multiple_epochs(epochs, path):
 
 
 if __name__ == "__main__":
-    load_path_gen = '/home/vm/hand_ws/src/FFHNet/checkpoints/2021-04-09T15_15_03-gen_01'
-    load_path_eva = '/home/vm/hand_ws/src/FFHNet/checkpoints/2021-04-28T15_47_17-rb_03_512'
-    load_epoch_gen = 10
-    load_epoch_eva = 30
-    # eval_ffhnet_sampling_and_filtering_real(load_epoch_eva, load_epoch_gen, load_path_eva,
-    #                                         load_path_gen)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--gen_path', default='models/ffhgenerator', help='path to FFHGenerator model')
+    parser.add_argument('--load_gen_epoch', type=int, default=10, help='epoch of FFHGenerator model')
+    parser.add_argument('--eva_path', default='models/ffhevaluator', help='path to FFHEvaluator model')
+    parser.add_argument('--load_eva_epoch', type=int, default=30, help='epoch of FFHEvaluator model')
+    args = parser.parse_args()
+
+    load_path_gen = args.gen_path
+    load_path_eva = args.eva_path
+    load_epoch_gen = args.load_gen_epoch
+    load_epoch_eva = args.load_eva_epoch
+
+    eval_ffhnet_sampling_and_filtering_real(load_epoch_eva, load_epoch_gen, load_path_eva,
+                                            load_path_gen)
     eval_ffheva_num_removed_grasps(load_epoch_eva, load_epoch_gen, load_path_eva, load_path_gen)
-    # epochs = [5, 10, 15, 20, 25, 30, 35]
-    # path = os.path.join(BASE_PATH, 'src/FFHNet/checkpoints/2021-04-29T19_32_54-rb_04/eval')
-    # eval_eva_acc_multiple_epochs(epochs, path)
