@@ -1,20 +1,15 @@
 from __future__ import division
 
-import collections
 import colorsys
 import copy
 import os
 
 import matplotlib
-import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 import open3d as o3d
-import pandas as pd
 import pyrender
 import trimesh
-from FFHNet.config.eval_config import EvalConfig
-from FFHNet.models.ffhnet import FFHNet
 from FFHNet.utils import utils
 from FFHNet.utils.grasp_data_handler import GraspDataHandlerVae
 from sklearn.metrics import confusion_matrix
@@ -209,27 +204,6 @@ def show_grasp_refinement(data_list, p_success_list, pcd_paths, grasp_idx=-1):
     o3d.visualization.draw_geometries(grasps)
 
 
-def show_grasps_o3d_viewer(self, palm_poses, object_pcd_path):
-    """Visualize the sampled grasp poses in open3d along with the object point cloud.
-
-    Args:
-        palm_poses (list of np array, n*4*4): Sampled poses.
-        object_pcd_path (str): Path to object pcd.
-    """
-    frames = []
-    for pose in palm_poses:
-        frame = o3d.geometry.TriangleMesh.create_coordinate_frame(0.01).transform(pose)
-        frames.append(frame)
-
-    # visualize
-    orig = o3d.geometry.TriangleMesh.create_coordinate_frame(0.01)
-    frames.append(orig)
-
-    obj = o3d.io.read_point_cloud(object_pcd_path)
-    frames.append(obj)
-    o3d.visualization.draw_geometries(frames)
-
-
 def show_dataloader_grasp(bps_path, obj, centr_T_mesh, palm_pose_mesh, palm_pose_centr):
     """
     """
@@ -272,8 +246,7 @@ def show_dataloader_grasp(bps_path, obj, centr_T_mesh, palm_pose_mesh, palm_pose
 def show_generated_grasp_distribution(pcd_path,
                                       grasps,
                                       highlight_idx=-1,
-                                      custom_vis=True,
-                                      save_ix=0):
+                                      custom_vis=True):
     """Visualizes the object point cloud together with the generated grasp distribution.
 
     Args:
@@ -311,41 +284,14 @@ def show_generated_grasp_distribution(pcd_path,
             vis.add_geometry(f)
 
         ctr = vis.get_view_control()
-        param = o3d.io.read_pinhole_camera_parameters(
-            "/home/vm/hand_ws/src/FFHNet/view_point.json")
+        param = o3d.io.read_pinhole_camera_parameters(os.path.join(BASE_PATH,"view_point.json"))
         ctr.convert_from_pinhole_camera_parameters(param)
-        vis.get_render_option().load_from_json("/home/vm/hand_ws/src/FFHNet/render_opt.json")
+        vis.get_render_option().load_from_json(os.path.join(BASE_PATH,"render_opt.json"))
         vis.run()
         vis.destroy_window()
-        #vis.get_render_option().save_to_json("/home/vm/hand_ws/src/FFHNet/render_opt.json")
-        # param = vis.get_view_control().convert_to_pinhole_camera_parameters()
-        # o3d.io.write_pinhole_camera_parameters("/home/vm/hand_ws/src/FFHNet/view_point.json",
-        #                                        param)
-        # l = raw_input("Save image?: ")
-        # if l == 'y':
-        #     vis.capture_screen_image("/home/vm/Pictures/{}.png".format(save_ix))
 
     else:
         o3d.visualization.draw_geometries(frames)
-
-
-def show_individual_ground_truth_grasps(obj_name, grasp_data_path, outcome='positive'):
-    # Get mesh for object
-    mesh_path = get_mesh_path(obj_name)
-
-    # Get the ground truth grasps
-    data_handler = GraspDataHandlerVae(file_path=grasp_data_path)
-    palm_poses, joint_confs, num_succ = data_handler.get_grasps_for_object(obj_name,
-                                                                           outcome=outcome)
-
-    # Display the grasps in a loop
-    for i, (palm_pose, joint_conf) in enumerate(zip(palm_poses, joint_confs)):
-        palm_hom = utils.hom_matrix_from_pos_quat_list(palm_pose)
-        th = joint_conf[16]
-        joint_conf = np.zeros(20)
-        joint_conf[16] = th
-        show_grasp_and_object(mesh_path, palm_hom, joint_conf)
-        print(joint_conf)
 
 
 def show_ground_truth_grasp_distribution(obj_name, grasp_data_path):
@@ -464,342 +410,3 @@ def show_grasp_and_object(path, palm_T_centr, joint_conf):
     scene.add_node(nc)
 
     pyrender.Viewer(scene, viewer_flags={"fullscreen": False}, use_raymond_lighting=True)
-
-
-def render_hand_in_configuration(cfg=np.zeros(20)):
-    path = os.path.dirname(os.path.abspath(__file__))
-    robot = URDF.load(os.path.join(BASE_PATH, 'meshes/hithand_palm/hithand.urdf'))
-
-    cfg_map = utils.get_hand_cfg_map(cfg)
-
-    # compute fk for meshes and links
-    fk = robot.visual_trimesh_fk(cfg=cfg_map)
-
-    # Construct a scene
-    scene = pyrender.Scene()
-
-    # Add the robot to the scene
-    for tm in fk:
-        pose = fk[tm]
-        mesh = pyrender.Mesh.from_trimesh(tm, smooth=False)
-        scene.add(mesh, pose=pose)
-
-    # Add more light to scene
-    pose_light = np.eye(4)
-    pose_light[:3, 3] = [-0.5, 0, 0]
-    scene.add(pyrender.PointLight(intensity=6), pose=pose_light)
-    pose_light = np.eye(4)
-    pose_light[:3, 3] = [0.5, 0, 0]
-    scene.add(pyrender.PointLight(intensity=6), pose=pose_light)
-    pose_light = np.eye(4)
-    pose_light[:3, 3] = [0, 0.9, 0]
-    scene.add(pyrender.PointLight(intensity=6), pose=pose_light)
-    pose_light = np.eye(4)
-    pose_light[:3, 3] = [0, -0.9, 0]
-    scene.add(pyrender.PointLight(intensity=6), pose=pose_light)
-
-    # View the scene
-    pyrender.Viewer(scene, use_raymond_lighting=True)
-
-
-def show_pcd_and_bps(pcd_path):
-    obj_pcd = o3d.io.read_point_cloud(pcd_path)
-
-    bps = np.load('/home/vm/basis_point_set.npy')
-    bps_pcd = o3d.geometry.PointCloud()
-    bps_pcd.points = o3d.utility.Vector3dVector(bps)
-    bps_pcd.paint_uniform_color([0, 1, 0])
-    o3d.visualization.draw_geometries([obj_pcd, bps_pcd])
-
-
-def shuffle_in_unison(a, b):
-    assert len(a) == len(b)
-    shuffled_a = np.empty(a.shape, dtype=a.dtype)
-    shuffled_b = np.empty(b.shape, dtype=b.dtype)
-    permutation = np.random.permutation(len(a))
-    for old_index, new_index in enumerate(permutation):
-        shuffled_a[new_index] = a[old_index]
-        shuffled_b[new_index] = b[old_index]
-    return shuffled_a, shuffled_b
-
-
-def show_dist_histogram():
-    # colors
-    #clist = [(0, "green"), (0.6, "yellow"), (0.9, "orange"), (1, "red")]
-    clist = [(0, "blue"), (0.5, "green"), (1, "yellow")]
-    rvb = mcolors.LinearSegmentedColormap.from_list("", clist)
-    N = 128
-
-    # Generate color map, sort data get the index "mixing" apply to color and give to barh
-    data = np.random.uniform(0.01, 0.1, (N)) + np.abs(np.random.normal(0, 0.01, (N)))
-    data = np.sort(data)
-    x = np.arange(N).astype(float)
-    t = x / N
-    data, t = shuffle_in_unison(data, t)
-    plt.barh(x, data, color=rvb(t), height=1.0)
-    plt.axis('off')
-    plt.show()
-    plt.savefig("test.png", bbox_inches='tight')
-
-
-def plot_coverage_success_curve():
-    x = [0.05, 0.28, 0.55, 0.73, 0.83, 1]  # coverage
-    y = [0.9, 0.84, 0.8, 0.75, 0.7, 0.61]  # grasping success
-
-    plt.style.use(['science', 'grid'])
-    matplotlib.rcParams.update({'font.size': 12})
-
-    fig, ax = plt.subplots()
-    ax.plot(x, y)
-    ax.autoscale(tight=True)
-    pparam = dict(title='Coverage-Success Curve', xlabel='Coverage', ylabel='Grasping Success')
-    ax.set(**pparam)
-    ax.set_ylim([0, 1])
-    ax.set_xlim([0, 1])
-
-    plt.show()
-    save_path = os.path.join(
-        '/home/vm/Documents/thesis/master_thesis/figures/chapter_05/eva_eval/coverage_success_curve.pdf'
-    )
-    fig.savefig(save_path)
-
-
-def plot_threshold_success_curve():
-    x = [0.0, 0.5, 0.7, 0.9, 0.95]  # coverage
-    y = [0.61, 0.7, 0.75, 0.82, 0.91]  # grasping success
-    plt.style.use(['science', 'grid'])
-    matplotlib.rcParams.update({'font.size': 12})
-
-    fig, ax = plt.subplots()
-    ax.plot(x, y)
-    ax.autoscale(tight=True)
-    pparam = dict(title='Grasping Success over Threshold',
-                  xlabel='Threshold',
-                  ylabel='Grasping Success')
-    ax.set(**pparam)
-    ax.set_ylim([0, 1])
-    ax.set_xlim([0, 1])
-
-    plt.show()
-    save_path = os.path.join(
-        '/home/vm/Documents/thesis/master_thesis/figures/chapter_05/eva_eval/threshold_success_curve.pdf'
-    )
-    fig.savefig(save_path)
-
-
-def plot_2D_gaussian():
-    N = 100
-    X = np.linspace(-2, 2, N)
-    Y = np.linspace(-2, 2, N)
-    X, Y = np.meshgrid(X, Y)
-
-    # Mean vector and covariance matrix
-    mu = np.array([0., 0.])
-    Sigma = np.array([[1., 0], [0, 1.]])
-
-    # Pack X and Y into a single 3-dimensional array
-    pos = np.empty(X.shape + (2, ))
-    pos[:, :, 0] = X
-    pos[:, :, 1] = Y
-
-    def multivariate_gaussian(pos, mu, Sigma):
-        """Return the multivariate Gaussian distribution on array pos."""
-
-        n = mu.shape[0]
-        Sigma_det = np.linalg.det(Sigma)
-        Sigma_inv = np.linalg.inv(Sigma)
-        N = np.sqrt((2 * np.pi)**n * Sigma_det)
-        # This einsum call calculates (x-mu)T.Sigma-1.(x-mu) in a vectorized
-        # way across all the input variables.
-        fac = np.einsum('...k,kl,...l->...', pos - mu, Sigma_inv, pos - mu)
-
-        return np.exp(-fac / 2) / N
-
-    # The distribution on the variables X, Y packed into pos.
-    Z = multivariate_gaussian(pos, mu, Sigma)
-
-    # plot using subplots
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111, projection='3d')
-
-    clist = [(0, "green"), (0.3, "yellow"), (0.7, "orange"), (1, "red")]
-    cmap = mcolors.LinearSegmentedColormap.from_list("my_map", clist, N)
-    ax1.plot_surface(X,
-                     Y,
-                     Z,
-                     rstride=1,
-                     cstride=1,
-                     linewidth=0,
-                     antialiased=False,
-                     cmap=cmap,
-                     alpha=1)
-    #plt.axes('off')
-    ax1.set_axis_off()
-    plt.show()
-
-
-def plot_filtered_grasps_per_threshold(path_to_csv):
-    """Plots a graph where the x-axis is the threshold of the FFHEvaluator evaluation, below which grasps are rejected
-    and y-axis is the percentage of reamining grasps
-
-    Args:
-        path_to_csv (str): Path to a csv where each column is threshold and reamining grasps percentage.
-    """
-    df = pd.read_csv(path_to_csv)
-    x = df['thresh'].to_numpy()
-    y = df['average_remaining_grasps'].to_numpy()
-
-    plt.style.use(['science', 'grid'])
-    matplotlib.rcParams.update({'font.size': 12})
-
-    fig, ax = plt.subplots()
-    ax.plot(x, y)
-    ax.autoscale(tight=True)
-    pparam = dict(title='Ratio of Grasps above Threshold',
-                  xlabel='Success Threshold ($th$)',
-                  ylabel='\% of Grasps: $p(s) > th$')
-    ax.set(**pparam)
-    plt.show()
-
-    save_path = os.path.join(
-        '/home/vm/Documents/thesis/master_thesis/figures/chapter_05/eva_eval/grasps_above_thresh.pdf'
-    )
-    fig.savefig(save_path)
-
-
-def plot_ffhevaluator_accuracy_curve(acc_type, exp_type='layers'):
-    plt.style.use(['science', 'grid'])
-    matplotlib.rcParams.update({'font.size': 12})
-    if acc_type == 'mean':
-        n = 'Mean'
-    elif acc_type == 'positive':
-        n = 'Positive'
-    elif acc_type == 'negative':
-        n = 'Negative'
-    pparam = dict(title='Evaluation Accuracy: ' + n, xlabel='Epoch', ylabel='Accuracy')
-
-    # Choose experiments
-    assert (exp_type == 'layers' or exp_type == 'neurons')
-    accs_exps = exps[exp_type]
-
-    epochs = [0, 5, 10, 15, 20, 25, 30, 35]
-
-    mean_accs = []
-    mean_acc = []
-    keys = accs_exps.keys() if isinstance(accs_exps, collections.OrderedDict) else sorted(
-        accs_exps.keys())
-    for key in keys:
-        mean_acc = []
-        (acc_pos, acc_neg) = accs_exps[key]
-        for (p, n) in zip(acc_pos, acc_neg):
-            if acc_type == 'mean':
-                mean_acc.append((p + n) / 2.)
-            elif acc_type == 'positive':
-                mean_acc.append(p)
-            elif acc_type == 'negative':
-                mean_acc.append(n)
-        mean_accs.append(mean_acc)
-
-    fig, ax = plt.subplots()
-    for mean_acc, label in zip(mean_accs, keys):
-        ax.plot(epochs, mean_acc, label=label)
-    ax.legend()
-    ax.autoscale(tight=True)
-    ax.set(**pparam)
-    ax.set_ylim([0.6, 0.95])
-    save_path = os.path.join('figures/ffheva_exps', exp_type,
-                             exp_type + '_eva_accuracy_' + acc_type + '.pdf')
-    fig.savefig(save_path)
-
-    save_path_thesis = '/home/vm/Documents/thesis/master_thesis/figures/chapter_05/eva_training'
-    save_path = os.path.join(save_path_thesis, exp_type,
-                             exp_type + '_eva_accuracy_' + acc_type + '.pdf')
-    fig.savefig(save_path)
-
-    plt.show()
-
-
-def plot_ffhevaluator_training_curve(log_path):
-    #mean_acc
-    pass
-
-
-def icra_22_video_submission_visualization():
-    # define paths
-    pcd_path = "/home/vm/data/real_objects/object/mustard_bottle_02.pcd"
-    bps_path = pcd_path.replace(".pcd", ".npy")
-    load_path_gen = '/home/vm/hand_ws/src/FFHNet/checkpoints/2021-04-09T15_15_03-gen_01'
-    load_path_eva = '/home/vm/hand_ws/src/FFHNet/checkpoints/2021-04-28T15_47_17-rb_03_512'
-    load_epoch_gen = 10
-    load_epoch_eva = 30
-    n_samples = 1000
-
-    # Load ffhnet
-    cfg = EvalConfig().parse()
-    ffhnet = FFHNet(cfg)
-    ffhnet.load_ffhgenerator(epoch=load_epoch_gen, load_path=load_path_gen)
-    ffhnet.load_ffhevaluator(epoch=load_epoch_eva, load_path=load_path_eva)
-
-    # Load BPS and generate grasps
-    obj_bps = np.load(bps_path)
-    grasps = ffhnet.generate_grasps(obj_bps, n_samples=n_samples, return_arr=True)
-
-    # Show only grasps above threshold
-    grasps = ffhnet.filter_grasps(obj_bps, grasps, thresh=0.77)
-
-    # Iterate over grasps
-    for j in range(n_samples):
-        # Get the grasp sample
-        rot_matrix = grasps['rot_matrix'][j, :, :]
-        transl = grasps['transl'][j, :]
-        transl[1] += 0.015
-        transl[2] += 0.01
-        joint_conf = grasps['joint_conf'][j, :]
-
-        # Get the palm pose in centroid frame
-        palm_pose_centr = utils.hom_matrix_from_transl_rot_matrix(transl, rot_matrix)
-
-        # Show hand and grasp
-        show_grasp_and_object(pcd_path, palm_pose_centr, joint_conf)
-
-        # Show distribution with grasp highlighted
-        show_generated_grasp_distribution(pcd_path, grasps, highlight_idx=j, save_ix=j)
-
-
-if __name__ == '__main__':
-    icra_22_video_submission_visualization()
-    # plot_threshold_success_curve()
-    # path_to_csv = '/home/vm/hand_ws/src/FFHNet/results/filt_diff_thresh.csv'
-    # plot_filtered_grasps_per_threshold(path_to_csv)
-    # show_individual_ground_truth_grasps('kit_BakingSoda',
-    #                                     '/home/vm/data/ffhnet-data/ffhnet-grasp.h5',
-    #                                     outcome='collision')
-
-    # path = os.path.join(BASE_PATH, 'checkpoints/2021-04-28T15_47_17/total_loss_eva.csv')
-    # df = pd.read_csv(path)
-    # epochs = [5, 10, 15, 20, 25, 30]
-    # epochs = [35]
-    # exp_type = 'neurons'
-    # plot_ffhevaluator_accuracy_curve('positive', exp_type)
-    # plot_ffhevaluator_accuracy_curve('negative', exp_type)
-    # plot_ffhevaluator_accuracy_curve('mean', exp_type)
-    # pred_labels = np.load(
-    #     os.path.join(BASE_PATH,
-    #                  'checkpoints/2021-04-28T15_47_17-rb_03_512/eval/20_pred_labels.npy'))
-    # gt_labels = np.load(
-    #     os.path.join(BASE_PATH, 'checkpoints/2021-04-28T15_47_17-rb_03_512/eval/30_gt_labels.npy'))
-    # folder = '2021-05-01T17_10_15-rb_03_1024'
-    # folder = '2021-04-28T15_47_17-rb_03_512'
-    # folder = '2021-04-30T19_25_36-rb_02'
-    # folder = 'q2021-04-29T19_32_54-rb_04'
-    # for epoch in epochs:
-    #     pred_labels = np.load(
-    #         os.path.join(BASE_PATH, 'checkpoints', folder, 'eval',
-    #                      str(epoch) + '_pred_labels.npy'))
-    #     gt_labels = np.load(
-    #         os.path.join(BASE_PATH,
-    #                      'checkpoints/2021-05-01T17_10_15-rb_03_1024/eval/25_gt_labels.npy'))
-    #     plot_confusion_matrix(1 - gt_labels,
-    #                           1 - pred_labels,
-    #                           classes=['success', 'failure'],
-    #                           normalize=True)

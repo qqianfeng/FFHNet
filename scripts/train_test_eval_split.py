@@ -1,13 +1,18 @@
 """ This script uses the information about which objects belong to the train/test/val
 datasets in the metadata.csv file to split all the obejct pointclouds into their respective folders.
 """
-import h5py
 import os
 import pandas as pd
 import shutil
 
 
 def main(metadata_csv_path, src_pc_path, dst_base_path):
+    """
+    Args:
+        metadata_csv_path (str): generated csv file path
+        src_pc_path (_type_): source point cloud data folder path
+        dst_base_path (_type_): destination to store the data
+    """
     df = pd.read_csv(metadata_csv_path)
     for split in ['train', 'test', 'eval']:
         # Get the object names for this split
@@ -23,14 +28,3 @@ def main(metadata_csv_path, src_pc_path, dst_base_path):
             #os.mkdir(dst_obj_folder)
             # copy entire src folder with files to dst
             shutil.copytree(src_obj_folder, dst_obj_folder)
-
-    pass
-
-
-if __name__ == '__main__':
-    # "Hyperparameters"
-    metadata_csv_path = '/home/vm/data/metadata.csv'
-    src_pc_path = '/home/vm/data/ffhnet-data/point_clouds'
-    dst_base_path = '/home/vm/data/ffhnet-data/'
-
-    main(metadata_csv_path, src_pc_path, dst_base_path)

@@ -1,19 +1,9 @@
-import copy
+import bps_torch.bps as b_torch
 import h5py
 import numpy as np
 import open3d as o3d
-import os
-import sys
 import torch
 import transforms3d as tf
-
-if sys.version[0] == '3':
-    import bps_torch.bps as b_torch
-
-# elif sys.version[0] == '2':
-#     raise SystemError("Please use python3 to run this script")
-# import tf.transformations as tft
-
 from FFHNet.utils.definitions import HAND_CFG
 
 
@@ -95,15 +85,6 @@ def display_inlier_outlier(pcd, ind):
     pcd_in.paint_uniform_color([0.5, 0.5, 0.5])
     pcd_out.paint_uniform_color([1, 0, 0])
     o3d.visualization.draw_geometries([pcd_in, pcd_out])
-
-
-def encode_pcd_with_bps(pcd, save_path, bps_path='/home/vm/data/ffhnet-data/basis_point_set.npy'):
-    bps_np = np.load(bps_path)
-    bps = b_torch.bps_torch(custom_basis=bps_np)
-    pcd_np = np.asarray(pcd.points)
-    enc_dict = bps.encode(pcd_np)
-    enc_np = enc_dict['dists'].cpu().detach().numpy()
-    np.save(save_path, enc_np)
 
 
 def filter_pcd_workspace_boundaries(pcd, x_min, x_max, y_min, y_max, z_min, z_max):
@@ -244,8 +225,8 @@ def hom_matrix_from_transl_rot_matrix(transl, rot_matrix):
 
 
 def hom_matrix_batch_from_transl_rot_matrix(transl, rot_matrix, tensors=True):
-    """ 
-    args:    
+    """
+    args:
         transl [batch_size*3]
         rot_matrix [batch_size*3*3]
 
@@ -296,27 +277,6 @@ def normalize_vector(v, return_mag=False):
         return v
 
 
-def print_grasp_file():
-    with h5py.File('/home/vm/data/exp_data/2021-03-16/grasp_data.h5', 'r') as f:
-        grasps_gp = f['recording_sessions']['recording_session_0003']['grasp_trials'][
-            'bigbird_dove_go_fresh_burst']['grasps']['no_collision']
-        for k in grasps_gp:
-            grasp = grasps_gp[k]
-            print('Desired', grasp['desired_preshape_joint_state'][()])
-            print('True', grasp['true_preshape_joint_state'][()])
-            print('Lifted', grasp['lifted_joint_state'][()])
-            print('Closed', grasp['closed_joint_state'][()])
-
-    with h5py.File('/home/vm/data/ffhnet-data/ffhnet-grasp.h5', 'r') as f:
-        obj_gp = f[f.keys()[12]]
-        pos_gp = obj_gp['positive']
-        print(len(pos_gp.keys()))
-        for k in pos_gp.keys():
-            grasp = pos_gp[k]
-            print('Desired', grasp['desired_preshape_joint_state'][()])
-            print('True', grasp['true_preshape_joint_state'][()])
-
-
 def reduce_joint_conf(jc_full):
     """Turn the 20 DoF input joint array into 15 DoF by either dropping each 3rd or 4th joint value, depending on which is smaller.
 
@@ -356,34 +316,3 @@ def rot_matrix_from_ortho6d(ortho6d, dtype=torch.float32):
     matrix = torch.cat((x, y, z), 2)  # batch*3*3
     matrix.to(dtype)
     return matrix
-
-
-def filter_pcd_manually():
-    path = '/home/vm/data/real_objects/object/mustard_bottle_02_need_filt.pcd'
-    pcd = o3d.io.read_point_cloud(path)
-
-    orig = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.1)
-    o3d.visualization.draw_geometries([pcd, orig])
-
-    pcd = filter_pcd_workspace_boundaries(pcd, -0.032, 1, -1, 1, -1, 1)
-    o3d.visualization.draw_geometries([pcd, orig])
-    _, inliers = pcd.remove_radius_outlier(150, 0.02)
-    display_inlier_outlier(pcd, inliers)
-    pcd = pcd.select_down_sample(inliers)
-    o3d.visualization.draw_geometries([pcd, orig])
-
-    o3d.io.write_point_cloud(path.replace('_need_filt', ''), pcd)
-
-
-if __name__ == '__main__':
-    palm_hard_neg = hard_negative_from_positive(np.eye(4))
-    # base_path = '/home/vm/data/real_objects'
-    # path_objs = os.path.join(base_path, 'object')
-    # path_bps = os.path.join(base_path, 'bps')
-    # for f_name in os.listdir(path_objs):
-    #     pcd_path = os.path.join(path_objs, f_name)
-    #     pcd = o3d.io.read_point_cloud(pcd_path)
-
-    #     f_name = f_name.replace('.pcd', '.npy')
-    #     bps_save_path = os.path.join(path_bps, f_name)
-    #     encode_pcd_with_bps(pcd, bps_save_path)
