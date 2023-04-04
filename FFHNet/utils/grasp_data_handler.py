@@ -228,7 +228,6 @@ class GraspDataHandler():
 
 
 if __name__ == '__main__':
-    # file_path = os.path.join('/home/vm/', 'grasp_data.h5')
     file_path = os.path.join('/home/vm/', 'grasp_data.h5')
     gdh = GraspDataHandler(file_path=file_path)
     gdh.set_sess_name(sess_name='-1')

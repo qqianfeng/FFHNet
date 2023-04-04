@@ -1,6 +1,5 @@
 import os
 import time
-import numpy as np
 try:
     from tensorboardX import SummaryWriter
 except ImportError as error:

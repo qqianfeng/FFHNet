@@ -7,9 +7,6 @@ import yaml
 # If you want to continue training, set continue_train=True, start_epoch=desired_epoch and load_path=/path/to/pretrained
 path = os.path.dirname(os.path.abspath(__file__))
 BASE_PATH = os.path.split(os.path.split(path)[0])[0]
-while path[-2:] != 'vm':
-    path = os.path.split(path)[0]
-ROOT_PATH = path
 
 
 class BaseConfig(object):
@@ -30,7 +27,7 @@ class BaseConfig(object):
                                  help='Whether to continue train from prev ckpt.')
         self.parser.add_argument('--data_dir',
                                  type=str,
-                                 default=os.path.join(ROOT_PATH, 'data/ffhnet-data'),
+                                 default=os.path.join(os.getenv("HOME"), 'data/ffhnet-data'),
                                  help='Path to root directory of the dataset.')
         self.parser.add_argument('--gpu_ids',
                                  type=list,

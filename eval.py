@@ -282,10 +282,10 @@ def eval_ffhnet_sampling_and_filtering_real(load_epoch_eva,
                                             load_path_gen,
                                             n_samples=1000,
                                             thresh_succ=0.5,
-                                            base_data_bath='/home/vm/data/real_objects',
                                             show_individual_grasps=False):
     cfg = EvalConfig().parse()
     ffhnet = FFHNet(cfg)
+    base_data_bath = os.path.join(BASE_PATH,'data','real_objects')
     ffhnet.load_ffhgenerator(epoch=load_epoch_gen, load_path=load_path_gen)
     ffhnet.load_ffhevaluator(epoch=load_epoch_eva, load_path=load_path_eva)
     path_real_objs_bps = os.path.join(base_data_bath, 'bps')
@@ -396,12 +396,12 @@ def eval_ffhgenerator_qualitatively(load_epoch,
 def eval_ffhgenerator_qualitatively_on_real_data(load_epoch,
                                                  load_path,
                                                  n_samples=1000,
-                                                 base_data_bath='/home/vm/data/real_objects',
                                                  show_individual_grasps=True):
 
     cfg = EvalConfig().parse()
     ffhnet = FFHNet(cfg)
     ffhnet.load_ffhgenerator(epoch=load_epoch, load_path=load_path)
+    base_data_bath = os.path.join(BASE_PATH,'data','real_objects')
 
     path_real_objs_bps = os.path.join(base_data_bath, 'bps')
     for f_name in os.listdir(path_real_objs_bps):
@@ -440,7 +440,7 @@ def eval_eva_acc_multiple_epochs(epochs, path):
     cfg.name = os.path.split(path)[1]
     w = writer.Writer(cfg)
     for epoch in epochs:
-        mean_accuracy, gt_labels, pred_labels = eval_eva_accuracy(load_path=os.path.split(path)[0],
+        mean_accuracy, _, _ = eval_eva_accuracy(load_path=os.path.split(path)[0],
                                                                   load_epoch_eva=epoch,
                                                                   show_confusion_matrix=False)
         w.print_current_eval_loss(epoch, mean_accuracy)
