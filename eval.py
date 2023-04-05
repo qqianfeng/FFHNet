@@ -13,9 +13,7 @@ from FFHNet.data.ffhgenerator_data_set import FFHGeneratorDataSet
 from FFHNet.models.ffhnet import FFHNet
 from FFHNet.utils import utils, visualization, writer
 
-path = os.path.dirname(os.path.abspath(__file__))
-BASE_PATH = os.path.split(os.path.split(path)[0])[0]
-
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
 def update_mean_losses_gen(mean_losses, new_losses):
     mean_losses['total_loss_gen'] += new_losses['total_loss_gen'].detach().cpu().numpy()
@@ -176,6 +174,7 @@ def eval_ffhnet_sampling_and_filtering(load_epoch_eva,
                                        load_epoch_gen,
                                        load_path_eva,
                                        load_path_gen,
+                                       gazebo_obj_path,
                                        n_samples=1000,
                                        thresh_succ=0.5):
     cfg = TrainConfig().parse()
@@ -232,7 +231,7 @@ def eval_ffhnet_sampling_and_filtering(load_epoch_eva,
 
         # Visualize ground truth object distribution
         visualization.show_ground_truth_grasp_distribution(data['obj_name'][0],
-                                                           dset.grasp_data_path)
+                                                           dset.grasp_data_path, gazebo_obj_path)
         total_sampled += n_samples
         total_after_filt += n_grasps_filt
         if i % 100 == 0:
@@ -285,7 +284,7 @@ def eval_ffhnet_sampling_and_filtering_real(load_epoch_eva,
                                             show_individual_grasps=False):
     cfg = EvalConfig().parse()
     ffhnet = FFHNet(cfg)
-    base_data_bath = os.path.join(BASE_PATH,'data','real_objects')
+    base_data_bath = os.path.join(ROOT_PATH,'data','real_objects')
     ffhnet.load_ffhgenerator(epoch=load_epoch_gen, load_path=load_path_gen)
     ffhnet.load_ffhevaluator(epoch=load_epoch_eva, load_path=load_path_eva)
     path_real_objs_bps = os.path.join(base_data_bath, 'bps')
@@ -356,6 +355,7 @@ def eval_ffhnet_sampling_and_filtering_real(load_epoch_eva,
 
 def eval_ffhgenerator_qualitatively(load_epoch,
                                     load_path,
+                                    gazebo_obj_path,
                                     n_samples=1000,
                                     show_individual_grasps=True):
     cfg = EvalConfig().parse()
@@ -377,7 +377,8 @@ def eval_ffhgenerator_qualitatively(load_epoch,
 
         # Visualize ground truth object distribution
         visualization.show_ground_truth_grasp_distribution(data['obj_name'][0],
-                                                           dset.grasp_data_path)
+                                                           dset.grasp_data_path,
+                                                           gazebo_obj_path)
 
         # Visualize individual grasps qualitatively
         if show_individual_grasps:
@@ -401,7 +402,7 @@ def eval_ffhgenerator_qualitatively_on_real_data(load_epoch,
     cfg = EvalConfig().parse()
     ffhnet = FFHNet(cfg)
     ffhnet.load_ffhgenerator(epoch=load_epoch, load_path=load_path)
-    base_data_bath = os.path.join(BASE_PATH,'data','real_objects')
+    base_data_bath = os.path.join(ROOT_PATH,'data','real_objects')
 
     path_real_objs_bps = os.path.join(base_data_bath, 'bps')
     for f_name in os.listdir(path_real_objs_bps):
@@ -452,12 +453,15 @@ if __name__ == "__main__":
     parser.add_argument('--load_gen_epoch', type=int, default=10, help='epoch of FFHGenerator model')
     parser.add_argument('--eva_path', default='models/ffhevaluator', help='path to FFHEvaluator model')
     parser.add_argument('--load_eva_epoch', type=int, default=30, help='epoch of FFHEvaluator model')
+    # parser.add_argument('--gazebo_obj_path', type=str, help='path to objects_gazebo folder in gazebo objects repo')
+
     args = parser.parse_args()
 
     load_path_gen = args.gen_path
     load_path_eva = args.eva_path
     load_epoch_gen = args.load_gen_epoch
     load_epoch_eva = args.load_eva_epoch
+    # gazebo_obj_path = args.gazebo_obj_path
 
     eval_ffhnet_sampling_and_filtering_real(load_epoch_eva, load_epoch_gen, load_path_eva,
                                             load_path_gen)

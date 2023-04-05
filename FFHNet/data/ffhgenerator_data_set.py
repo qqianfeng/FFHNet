@@ -21,6 +21,7 @@ class FFHGeneratorDataSet(data.Dataset):
         self.objs_names = self.get_objs_names(self.ds_path)
         self.objs_folder = os.path.join(self.ds_path, 'bps')
         self.grasp_data_path = os.path.join(cfg.data_dir, cfg.grasp_data_file_name)
+        self.gazebo_obj_path = cfg.gazebo_obj_path
 
         self.grasp_data_handler = GraspDataHandlerVae(self.grasp_data_path)
         df = pd.read_csv(os.path.join(cfg.data_dir, 'metadata.csv'))
@@ -97,9 +98,9 @@ class FFHGeneratorDataSet(data.Dataset):
 
     def __getitem__(self, idx):
         """ Batch contains: N random different object bps, each one successful grasp
-        
-        Dataset size = total_num_successful_grasps * N_bps_per_object, e.g. 15.000 * 50 = 750k 
-        
+
+        Dataset size = total_num_successful_grasps * N_bps_per_object, e.g. 15.000 * 50 = 750k
+
         Should fetch one bps for an object + a single grasp for that object.
         Returns a dict with palm_position, palm_orientation, finger_configuration and bps encoding of the object.
         """
@@ -138,7 +139,7 @@ class FFHGeneratorDataSet(data.Dataset):
             print(joint_conf)
             print(palm_transl)
             visualization.show_dataloader_grasp(bps_path, obj_name, centr_T_mesh, palm_pose_hom,
-                                                palm_pose_centr)
+                                                palm_pose_centr, self.gazebo_obj_path)
 
             # Visualize full hand config
             visualization.show_grasp_and_object(bps_path, palm_pose_centr, joint_conf)

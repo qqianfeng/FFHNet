@@ -37,7 +37,7 @@ def find_max_min_success(p_success_list, idx):
     return succ_max, succ_min
 
 
-def get_mesh_path(obj_name):
+def get_mesh_path(obj_name, gazebo_obj_path):
     obj_split = obj_name.split('_')
     dset = obj_split[0]
     obj = '_'.join(obj_split[1:])
@@ -49,11 +49,11 @@ def get_mesh_path(obj_name):
         file_name = ''
     else:
         raise Exception('Unknown dataset name.')
-    path = os.path.join('/home/vm/gazebo-objects/objects_gazebo', dset, obj, file_name)
+    path = os.path.join(gazebo_obj_path, dset, obj, file_name)
     return path
 
 
-def get_mesh_for_object(obj_name, from_trimesh=False):
+def get_mesh_for_object(obj_name, gazebo_obj_path, from_trimesh=False):
     """Loads the mesh for the object and returns it
 
     Args:
@@ -65,7 +65,7 @@ def get_mesh_for_object(obj_name, from_trimesh=False):
     Returns:
         mesh (o3d.TriangleMesh): The o3d triangle mesh object.
     """
-    path = get_mesh_path(obj_name)
+    path = get_mesh_path(obj_name, gazebo_obj_path)
 
     if from_trimesh:
         mesh = trimesh.load_mesh(path)
@@ -204,7 +204,7 @@ def show_grasp_refinement(data_list, p_success_list, pcd_paths, grasp_idx=-1):
     o3d.visualization.draw_geometries(grasps)
 
 
-def show_dataloader_grasp(bps_path, obj, centr_T_mesh, palm_pose_mesh, palm_pose_centr):
+def show_dataloader_grasp(bps_path, obj, centr_T_mesh, palm_pose_mesh, palm_pose_centr, gazebo_obj_path):
     """
     """
     # Load the actual object mesh and turn it into a point cloud
@@ -219,7 +219,7 @@ def show_dataloader_grasp(bps_path, obj, centr_T_mesh, palm_pose_mesh, palm_pose
         file_name = ''
     else:
         raise Exception('Unknown dataset name.')
-    path = os.path.join('/home/vm/gazebo-objects/objects_gazebo', dset, obj_name, file_name)
+    path = os.path.join(gazebo_obj_path, dset, obj_name, file_name)
     mesh_pc = o3d.io.read_triangle_mesh(path)
     mesh_pc.compute_vertex_normals()
     mesh_pc.paint_uniform_color(np.array([0.2, 0.2, 0.2]))
@@ -294,14 +294,14 @@ def show_generated_grasp_distribution(pcd_path,
         o3d.visualization.draw_geometries(frames)
 
 
-def show_ground_truth_grasp_distribution(obj_name, grasp_data_path):
+def show_ground_truth_grasp_distribution(obj_name, grasp_data_path, gazebo_obj_path):
     """Shows all the ground truth positive grasps for an object.
 
     Args:
         obj_name (str): Name of the object, in the format datasetname_objectname
     """
     # Get the object mesh
-    mesh = get_mesh_for_object(obj_name)
+    mesh = get_mesh_for_object(obj_name, gazebo_obj_path)
 
     # Get all the grasps
     data_handler = GraspDataHandlerVae(file_path=grasp_data_path)

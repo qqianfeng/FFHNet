@@ -3,6 +3,7 @@ import cv2
 import h5py
 import os
 import numpy as np
+import argparse
 
 MD = 'metadata'
 RS = 'recording_sessions'
@@ -228,7 +229,11 @@ class GraspDataHandler():
 
 
 if __name__ == '__main__':
-    file_path = os.path.join('/home/vm/', 'grasp_data.h5')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--file_path',  help='path to dataset h5 file')
+    args = parser.parse_args()
+
+    file_path = args.file_path
     gdh = GraspDataHandler(file_path=file_path)
     gdh.set_sess_name(sess_name='-1')
     gdh.print_metadata()

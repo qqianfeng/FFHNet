@@ -23,7 +23,7 @@ class FFHEvaluatorDataSet(data.Dataset):
         self.objs_names = self.get_objs_names(self.ds_path)
         self.objs_folder = os.path.join(self.ds_path, 'bps')
         grasp_data_path = os.path.join(cfg.data_dir, cfg.grasp_data_file_name)
-
+        self.gazebo_obj_path = cfg.gazebo_obj_path
         self.grasp_data_handler = GraspDataHandlerVae(grasp_data_path)
 
         # Info about dataset from csv
@@ -51,7 +51,7 @@ class FFHEvaluatorDataSet(data.Dataset):
         Args:
             obj_folder (string): The path to the folder where the BPS lie
             success_per_obj_dict (dict): A dict with one key for each object and val being the amount of success grasps per object
-        
+
         Returns:
             bps_paths (list of strings): Long list of BPS paths.
             labels (list of strings): Indicating whether the grasp was successful, unsuccessful or in collision
@@ -135,7 +135,7 @@ class FFHEvaluatorDataSet(data.Dataset):
             print(joint_conf)
             print("label", label)
             visualization.show_dataloader_grasp(bps_path, obj_name, centr_T_mesh, palm_pose_hom,
-                                                palm_pose_centr)
+                                                palm_pose_centr, self.gazebo_obj_path)
             # Visualize full hand config
             visualization.show_grasp_and_object(bps_path, palm_pose_centr, joint_conf)
 

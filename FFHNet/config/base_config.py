@@ -76,7 +76,9 @@ class BaseConfig(object):
                                  default=False,
                                  type=bool,
                                  help='Whether to visualize the grasp refinement procedure')
-
+        self.parser.add_argument('--gazebo_obj_path',
+                                 type=str,
+                                 help='path to objects_gazebo folder')
     def parse(self):
         self.initialize()
         # If this gets called from ros launch file, need to hand over correct argv
