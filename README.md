@@ -1,7 +1,11 @@
-# Five-finger Hand Net (FFHNet)
+# FFHNet : Generating Multi-Fingered Robotic Grasps for Unknown Objects in Real-time
+FFHNet (ICRA 2022 [Paper](https://ieeexplore.ieee.org/document/9811666)) is an ML model which can generate a wide variety of high-quality multi-fingered grasps for unseen objects from a single view. 
 
-### Variational Grasp Generation and Evaluation for the DLR-HIT Hand II
+Generating and evaluating grasps with FFHNet takes only 30ms on a commodity GPU. To the best of our knowledge, FFHNet is the first ML-based real-time system for multi-fingered grasping with the ability to perform grasp inference at 30 frames per second (FPS). 
 
+For training, we synthetically generate 180k grasp samples for 129 objects. We are able to achieve 91% grasping success for unknown objects in simulation and we demonstrate the model's capabilities of synthesizing high-quality grasps also for real unseen objects.
+
+![](docs/images/pipeline.png)
 ## Installation
 
 python >= 3.8
@@ -17,10 +21,6 @@ pip install opencv-python open3d pyrender
 install bps_torch package
 
 In case of conflict between pytorch3d package and torch 1.7.1, try to ungrade torch to 1.6.0
-
-## Insights into grasp data
-
-You can now visualize individual objects and the grasps generated for them.
 
 ## To run the train script
 
