@@ -15,6 +15,7 @@ from FFHNet.utils import utils, visualization, writer
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
+
 def update_mean_losses_gen(mean_losses, new_losses):
     mean_losses['total_loss_gen'] += new_losses['total_loss_gen'].detach().cpu().numpy()
     mean_losses['kl_loss'] += new_losses['kl_loss'].detach().cpu().numpy()
@@ -453,16 +454,13 @@ if __name__ == "__main__":
     parser.add_argument('--load_gen_epoch', type=int, default=10, help='epoch of FFHGenerator model')
     parser.add_argument('--eva_path', default='models/ffhevaluator', help='path to FFHEvaluator model')
     parser.add_argument('--load_eva_epoch', type=int, default=30, help='epoch of FFHEvaluator model')
-    # parser.add_argument('--gazebo_obj_path', type=str, help='path to objects_gazebo folder in gazebo objects repo')
-
     args = parser.parse_args()
 
     load_path_gen = args.gen_path
     load_path_eva = args.eva_path
     load_epoch_gen = args.load_gen_epoch
     load_epoch_eva = args.load_eva_epoch
-    # gazebo_obj_path = args.gazebo_obj_path
 
     eval_ffhnet_sampling_and_filtering_real(load_epoch_eva, load_epoch_gen, load_path_eva,
-                                            load_path_gen)
+                                            load_path_gen, show_individual_grasps=True)
     eval_ffheva_num_removed_grasps(load_epoch_eva, load_epoch_gen, load_path_eva, load_path_gen)
