@@ -29,3 +29,10 @@ You can now visualize individual objects and the grasps generated for them.
 ```
 python eval.py
 ```
+| Data distribution from FFHGenerator  | Filter grasps with 0.5 thresh | Filter grasps with 0.75 thresh
+| --------------------------------------- | --------------------------------------- |--------------------------------------- |
+| ![](docs/images/ffhgen.png)       | ![](docs/images/filter.png) | ![](docs/images/filter2.png) | 
+
+| Filter grasps with 0.9 thresh  | Best grasp |
+| --------------------------------------- | --------------------------------------- |
+| ![](docs/images/filter_last.png)       | ![](docs/images/best_grasp.png) |  | 
