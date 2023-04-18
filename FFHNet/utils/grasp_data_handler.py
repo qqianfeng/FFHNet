@@ -1,5 +1,4 @@
 from __future__ import division
-import cv2
 import h5py
 import os
 import numpy as np
@@ -119,7 +118,7 @@ class GraspDataHandler():
 
             print("")
 
-    def print_object_metadata(self, obj_name, count=False, show_grasp=False, print_idxs=False):
+    def print_object_metadata(self, obj_name, count=False, print_idxs=False):
         with h5py.File(self.file_path, "r") as hdf:
             obj_metadata_gp = hdf[RS][self.sess_name][GT][obj_name][MD]
 
@@ -139,15 +138,6 @@ class GraspDataHandler():
                     if label == 1:
                         num_pos += 1
                         pos_idxs.append(i + 1)
-                        if show_grasp:
-                            name = '_'.join(obj_name.split('_')[1:])
-                            path = os.path.join(
-                                os.path.split(self.file_path)[0], 'grasp_data', RS, RS1, obj_name,
-                                'grasp_' + str(i + 1).zfill(4), 'post_grasp', name + '_depth.png')
-                            img = cv2.imread(path)
-                            cv2.imshow('grasp_' + str(i + 1).zfill(4), img)
-                            cv2.waitKey(0)
-                            cv2.destroyAllWindows()
                     elif label == 0:
                         num_neg += 1
                 print("Number of negative and positive grasps for object: %s" % obj_name)
@@ -239,4 +229,4 @@ if __name__ == '__main__':
     gdh.print_metadata()
     objs = gdh.print_objects()
     for obj in objs:
-        gdh.print_object_metadata(obj, count=True, show_grasp=False)
+        gdh.print_object_metadata(obj, count=True)
