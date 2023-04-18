@@ -10,19 +10,20 @@ For training, we synthetically generate 180k grasp samples for 129 objects. We a
 
 ## Installation
 
-python >= 3.8
-bps_torch installed from repo:
-`https://github.com/otaheri/bps_torch`
-
 ```
-pip install torch==1.7.1 torchvision==0.8.2 tensorboard
-pip install pyyaml h5py pandas transforms3d
-pip install opencv-python open3d pyrender
+conda create -n myenv python==3.8
 ```
 
-install bps_torch package
+```
+pip install -r requirements.txt
+```
 
-In case of conflict between pytorch3d package and torch 1.7.1, try to ungrade torch to 1.6.0
+Install chamfer_distance and bps_torch
+
+```
+pip install git+https://github.com/otaheri/chamfer_distance
+pip install git+https://github.com/otaheri/bps_torch
+```
 
 ## To run the evaluation script
 
