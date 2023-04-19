@@ -16,17 +16,17 @@ After you clone the repo. Use git lfs to download the model.
 git lfs pull
 ```
 
+Create a new conda environment with cudatoolkit 10.1
+
 ```
 conda create -n myenv python==3.8
+conda install -c anaconda cudatoolkit=10.1
 ```
+
+Install all dependencies.
 
 ```
 pip install -r requirements.txt
-```
-
-Install chamfer_distance and bps_torch
-
-```
 pip install git+https://github.com/otaheri/chamfer_distance
 pip install git+https://github.com/otaheri/bps_torch
 ```
