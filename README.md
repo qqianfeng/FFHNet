@@ -10,6 +10,12 @@ For training, we synthetically generate 180k grasp samples for 129 objects. We a
 
 ## Installation
 
+After you clone the repo. Use git lfs to download the model.
+
+```
+git lfs pull
+```
+
 ```
 conda create -n myenv python==3.8
 ```
