@@ -284,9 +284,9 @@ def show_generated_grasp_distribution(pcd_path,
             vis.add_geometry(f)
 
         ctr = vis.get_view_control()
-        param = o3d.io.read_pinhole_camera_parameters(os.path.join(BASE_PATH,"view_point.json"))
+        param = o3d.io.read_pinhole_camera_parameters(os.path.join(BASE_PATH,"FFHNet/config/view_point.json"))
         ctr.convert_from_pinhole_camera_parameters(param)
-        vis.get_render_option().load_from_json(os.path.join(BASE_PATH,"render_opt.json"))
+        vis.get_render_option().load_from_json(os.path.join(BASE_PATH,"FFHNet/config/render_opt.json"))
         vis.run()
         vis.destroy_window()
 
