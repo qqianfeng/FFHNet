@@ -31,7 +31,11 @@ pip install git+https://github.com/otaheri/chamfer_distance
 pip install git+https://github.com/otaheri/bps_torch
 ```
 
-## Models
+## Issues of LFS
+Now there is some problem with LFS. If you have trouble clone the repo, please run
+```
+GIT_LFS_SKIP_SMUDGE=1 git clone repo_link
+```
 In case the model cannot be loaded, here is the [link](https://drive.google.com/drive/folders/1T7JPnkggNxPqTVqxN1jcrrQGaKZYyAr3?usp=sharing).
 ## To run the evaluation script
 
