@@ -10,12 +10,6 @@ For training, we synthetically generate 180k grasp samples for 129 objects. We a
 
 ## Installation
 
-After you clone the repo. Use git lfs to download the model.
-
-```
-git lfs pull
-```
-
 Create a new conda environment with cudatoolkit 10.1
 
 ```
@@ -36,7 +30,10 @@ Now there is some problem with LFS. If you have trouble clone the repo, please r
 ```
 GIT_LFS_SKIP_SMUDGE=1 git clone repo_link
 ```
-In case the model cannot be loaded, here is the [link](https://drive.google.com/drive/folders/1T7JPnkggNxPqTVqxN1jcrrQGaKZYyAr3?usp=sharing).
+
+The model is located at here [link](https://drive.google.com/drive/folders/1T7JPnkggNxPqTVqxN1jcrrQGaKZYyAr3?usp=sharing).
+After download, extract to repo root path.
+
 ## To run the evaluation script
 
 ```
