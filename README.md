@@ -34,6 +34,9 @@ GIT_LFS_SKIP_SMUDGE=1 git clone repo_link
 The model is located at here [link](https://drive.google.com/drive/folders/1T7JPnkggNxPqTVqxN1jcrrQGaKZYyAr3?usp=sharing).
 After download, extract to repo root path.
 
+## Dataset
+You can download here [link](https://syncandshare.lrz.de/getlink/fi9EZb33KiSAJ5rLHAkhg7/ffhnet-data.zip)
+
 ## To run the evaluation script
 
 ```
