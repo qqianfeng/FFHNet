@@ -1,6 +1,6 @@
 # FFHNet : Generating Multi-Fingered Robotic Grasps for Unknown Objects in Real-time
 
-FFHNet (ICRA 2022 [Paper](https://ieeexplore.ieee.org/document/9811666)) is an ML model which can generate a wide variety of high-quality multi-fingered grasps for unseen objects from a single view.
+FFHNet (ICRA 2022 [Paper](https://ieeexplore.ieee.org/document/9811666),[video](https://youtu.be/fCYp6WJbdhc)) is an ML model which can generate a wide variety of high-quality multi-fingered grasps for unseen objects from a single view.
 
 Generating and evaluating grasps with FFHNet takes only 30ms on a commodity GPU. To the best of our knowledge, FFHNet is the first ML-based real-time system for multi-fingered grasping with the ability to perform grasp inference at 30 frames per second (FPS).
 
